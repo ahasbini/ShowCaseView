@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -29,7 +30,7 @@ import android.widget.FrameLayout;
 public class GuideView extends FrameLayout {
 
 
-    private static final float INDICATOR_HEIGHT = 30;
+    private static final float INDICATOR_HEIGHT = 15;
 
     private float density;
     private View target;
@@ -46,9 +47,8 @@ public class GuideView extends FrameLayout {
 
     final int ANIMATION_DURATION = 400;
     final Paint emptyPaint = new Paint();
-    final Paint paintLine = new Paint();
-    final Paint paintCircle = new Paint();
-    final Paint paintCircleInner = new Paint();
+    final Paint paintTriangle = new Paint();
+    Path path = new Path();
     final Paint mPaint = new Paint();
     final Paint targetPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     final Xfermode XFERMODE_CLEAR = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
@@ -124,46 +124,31 @@ public class GuideView extends FrameLayout {
             Bitmap bitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas tempCanvas = new Canvas(bitmap);
 
-            float lineWidth = 3 * density;
-            float strokeCircleWidth = 3 * density;
-            float circleSize = 6 * density;
-            float circleInnerSize = 5f * density;
-
-
             mPaint.setColor(0xdd000000);
             mPaint.setStyle(Paint.Style.FILL);
             mPaint.setAntiAlias(true);
             tempCanvas.drawRect(canvas.getClipBounds(), mPaint);
 
-            paintLine.setStyle(Paint.Style.FILL);
-            paintLine.setColor(Color.WHITE);
-            paintLine.setStrokeWidth(lineWidth);
-            paintLine.setAntiAlias(true);
+            paintTriangle.setStyle(Paint.Style.FILL);
+            paintTriangle.setColor(Color.WHITE);
+            paintTriangle.setAntiAlias(true);
 
-            paintCircle.setStyle(Paint.Style.STROKE);
-            paintCircle.setColor(Color.WHITE);
-            paintCircle.setStrokeCap(Paint.Cap.ROUND);
-            paintCircle.setStrokeWidth(strokeCircleWidth);
-            paintCircle.setAntiAlias(true);
-
-            paintCircleInner.setStyle(Paint.Style.FILL);
-            paintCircleInner.setColor(0xffcccccc);
-            paintCircleInner.setAntiAlias(true);
-
-            marginGuide = (int) (isTop ? 15 * density : -15 * density);
+            marginGuide = (int) (isTop ? 10 * density : -10 * density);
 
             float startYLineAndCircle = (isTop ? rect.bottom : rect.top) + marginGuide;
 
             float x = (rect.left / 2 + rect.right / 2);
-            float stopY = (yMessageView + INDICATOR_HEIGHT * density);
+            float stopY = (isTop ? yMessageView + INDICATOR_HEIGHT * density :
+                    yMessageView + mMessageView.getHeight() - INDICATOR_HEIGHT * density );
 
-            tempCanvas.drawLine(x, startYLineAndCircle, x,
-                    stopY
-                    , paintLine);
+            path.reset();
+            path.setFillType(Path.FillType.EVEN_ODD);
+            path.moveTo(x, startYLineAndCircle);
+            path.lineTo(x - 15 * density, stopY);
+            path.lineTo(x + 15 * density, stopY);
+            path.close();
 
-            tempCanvas.drawCircle(x, startYLineAndCircle, circleSize, paintCircle);
-            tempCanvas.drawCircle(x, startYLineAndCircle, circleInnerSize, paintCircleInner);
-
+            tempCanvas.drawPath(path, paintTriangle);
 
             targetPaint.setXfermode(XFERMODE_CLEAR);
             targetPaint.setAntiAlias(true);
