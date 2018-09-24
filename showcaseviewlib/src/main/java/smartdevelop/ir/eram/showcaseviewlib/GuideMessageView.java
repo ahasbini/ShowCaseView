@@ -68,6 +68,8 @@ class GuideMessageView extends LinearLayout {
     public void setTitle(String title) {
         if (title == null) {
             removeView(mTitleTextView);
+            final int padding = (int) (10 * density);
+            mContentTextView.setPadding(padding, padding, padding, padding);
             return;
         }
         mTitleTextView.setText(title);
